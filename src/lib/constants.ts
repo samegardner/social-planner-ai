@@ -1,0 +1,73 @@
+export const NYC_NEIGHBORHOODS = [
+  // Manhattan
+  "East Village",
+  "West Village",
+  "Greenwich Village",
+  "SoHo",
+  "NoHo",
+  "Lower East Side",
+  "Chinatown",
+  "Little Italy",
+  "Tribeca",
+  "FiDi",
+  "Chelsea",
+  "Hell's Kitchen",
+  "Midtown",
+  "Murray Hill",
+  "Gramercy",
+  "Flatiron",
+  "Union Square",
+  "Nolita",
+  "Upper East Side",
+  "Upper West Side",
+  "Harlem",
+  "Washington Heights",
+  "Morningside Heights",
+  // Brooklyn
+  "Williamsburg",
+  "Greenpoint",
+  "Bushwick",
+  "Park Slope",
+  "Cobble Hill",
+  "Brooklyn Heights",
+  "DUMBO",
+  "Fort Greene",
+  "Clinton Hill",
+  "Bed-Stuy",
+  "Crown Heights",
+  "Prospect Heights",
+  "Red Hook",
+  "Sunset Park",
+  "Bay Ridge",
+  "Flatbush",
+  "Ditmas Park",
+  // Queens
+  "Astoria",
+  "Long Island City",
+  "Flushing",
+  "Jackson Heights",
+  "Forest Hills",
+  "Ridgewood",
+  // Bronx
+  "South Bronx",
+  "Fordham",
+  // Other
+  "Roosevelt Island",
+  "Governors Island",
+];
+
+export const ACTIVITY_TYPES = [
+  { id: "food", label: "Food", description: "Restaurants, new openings, food markets" },
+  { id: "drinks", label: "Drinks", description: "Bars, cocktail spots, wine bars" },
+  { id: "active", label: "Active", description: "Sports, hiking, fitness classes" },
+  { id: "culture", label: "Culture", description: "Museums, comedy, live music, theater" },
+  { id: "low_key", label: "Low-key hangs", description: "Coffee, parks, board games" },
+  { id: "nightlife", label: "Nightlife", description: "Clubs, late-night events, parties" },
+  { id: "outdoors", label: "Outdoors", description: "Parks, rooftops, seasonal events" },
+];
+
+export const AVAILABILITY_SLOTS = [
+  { id: "weeknight_evenings", label: "Weeknight evenings", description: "Mon-Thu after work" },
+  { id: "weekend_days", label: "Weekend days", description: "Sat-Sun during the day" },
+  { id: "weekend_nights", label: "Weekend nights", description: "Fri-Sat nights" },
+];

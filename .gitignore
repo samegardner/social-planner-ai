@@ -39,3 +39,12 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# sqlite
+/data/*.db
+/data/*.db-wal
+/data/*.db-shm
+
+# agent state
+data/google-tokens.json
+data/conversations.json
