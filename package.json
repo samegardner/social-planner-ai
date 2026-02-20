@@ -23,8 +23,7 @@
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "rss-parser": "^3.13.0",
-    "tailwind-merge": "^3.4.1",
-    "twilio": "^5.12.2"
+    "tailwind-merge": "^3.4.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

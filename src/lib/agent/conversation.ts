@@ -14,7 +14,6 @@ interface ConversationState {
   messages: MessageParam[];
   lastSuggestionEventId: number | null;
   suggestedEventIds: number[];
-  lastSeenRowId: number;
   weekSocialCount: number;
   activeThread: boolean;
   lastProactiveDate: string | null;
@@ -25,7 +24,6 @@ const defaultState: ConversationState = {
   messages: [],
   lastSuggestionEventId: null,
   suggestedEventIds: [],
-  lastSeenRowId: 0,
   weekSocialCount: 0,
   activeThread: false,
   lastProactiveDate: null,
@@ -48,15 +46,6 @@ export function getState(): ConversationState {
   return state;
 }
 
-export function updateLastSeenRowId(rowId: number) {
-  state.lastSeenRowId = rowId;
-  saveState();
-}
-
-export function getLastSeenRowId(): number {
-  return state.lastSeenRowId;
-}
-
 function buildSystemPrompt(): string {
   const now = new Date();
   const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
@@ -67,7 +56,7 @@ function buildSystemPrompt(): string {
     year: "numeric",
   });
 
-  return `You are Sam's social planner, texting via iMessage. Sound like a friend, not a bot.
+  return `You are Sam's social planner, texting via SMS. Sound like a friend, not a bot.
 
 Personality:
 - Casual, concise, enthusiastic but not over the top
@@ -260,7 +249,7 @@ function loadState() {
     const loaded = JSON.parse(raw) as ConversationState;
     state = { ...defaultState, ...loaded };
     console.log(
-      `Loaded conversation state (${state.messages.length} messages, lastSeenRowId=${state.lastSeenRowId})`,
+      `Loaded conversation state (${state.messages.length} messages)`,
     );
   } catch {
     console.log("No existing conversation state, starting fresh.");
