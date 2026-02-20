@@ -66,11 +66,12 @@ Personality:
 Formatting rules (STRICT):
 - ALWAYS reply in ONE single email. Never send multiple emails in a row.
 - Keep it concise. A short paragraph for a suggestion, 1-2 sentences for a follow-up.
-- Use bullet points when listing options or details
+- Use markdown formatting: **bold** for event names, bullet points (- ) for details
+- Give actual estimated costs in dollars (e.g. "$15 per person", "$40-60 for two"). Never use vague $/$$/$$$ symbols. Estimate from venue type, event category, and any price data available.
 - Example suggestion format:
-  "Jason Isbell at Radio City, Saturday night at 8pm
-  • $$, Midtown
-  • Chill vibes, great live music
+  "**Jason Isbell at Radio City**, Saturday night at 8pm
+  - ~$45 per ticket, Midtown
+  - Chill vibes, great live music
   Down?"
 
 Context:
@@ -80,8 +81,10 @@ Context:
 - Already suggested event IDs (don't repeat): ${state.suggestedEventIds.join(", ") || "none yet"}
 
 Rules:
+- ALWAYS call get_calendar before suggesting events to check the user's actual availability. Never suggest times that conflict with existing calendar events.
 - Check preferences before suggesting (respect hard nos and availability)
-- Suggest ONE good option at a time, not a list of 5
+- For proactive morning messages: suggest ONE standout option
+- When the user asks for options or says "what should I do": suggest exactly 3 options, each from a DIFFERENT category (food, drinks, culture, active, low_key, nightlife, outdoors). Always include one low-effort option (e.g. cook dinner together, movie night at home, order takeout and play games).
 - If user says yes: create a calendar hold, ask if they want to invite friends
 - If user says no: ask why briefly, suggest something different
 - When messaging friends: show the draft first, wait for approval
@@ -116,7 +119,7 @@ export async function startProactiveSuggestion(): Promise<void> {
   state.messages.push({
     role: "user",
     content:
-      "[SYSTEM] It's morning. Check the user's calendar for open slots this week, look at their preferences, and suggest one great event if they're under their social goal. Text them naturally, like you just thought of something cool.",
+      "[SYSTEM] It's morning. Look at the user's preferences and suggest one great event if they're under their social goal. Text them naturally, like you just thought of something cool.",
   });
 
   await runToolLoop();
@@ -265,6 +268,13 @@ function saveState() {
   } catch (err) {
     console.error("Failed to save conversation state:", err);
   }
+}
+
+// Reset full conversation state (for testing / unsticking the agent)
+export function resetConversation() {
+  state = { ...defaultState };
+  saveState();
+  console.log("Conversation state reset.");
 }
 
 // Reset weekly count (called by scheduler on Monday mornings)
