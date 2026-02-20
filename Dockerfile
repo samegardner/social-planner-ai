@@ -13,9 +13,6 @@ RUN npm ci
 COPY . .
 RUN npm run build
 
-# Create a seed DB with all tables (using drizzle-kit push)
-RUN mkdir -p data && npx drizzle-kit push --force
-
 # Production image
 FROM node:20-alpine AS runner
 RUN apk add --no-cache python3 make g++
@@ -30,13 +27,9 @@ COPY --from=base /app/.next/standalone ./
 COPY --from=base /app/.next/static ./.next/static
 COPY --from=base /app/public ./public
 
-# Copy seed DB (used on first deploy when volume is empty)
-COPY --from=base /app/data/social-planner.db /app/seed.db
-
 # Symlink /app/data -> /data (persistent volume mount point)
 RUN ln -s /data /app/data && mkdir -p /data
 
 EXPOSE 3000
 
-# On first run, seed the DB if volume is empty, then start server
-CMD sh -c 'if [ ! -f /data/social-planner.db ]; then cp /app/seed.db /data/social-planner.db; echo "Seeded empty database"; fi && node server.js'
+CMD ["node", "server.js"]
