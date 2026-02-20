@@ -81,7 +81,7 @@ Context:
 - Already suggested event IDs (don't repeat): ${state.suggestedEventIds.join(", ") || "none yet"}
 
 Rules:
-- ALWAYS call get_calendar before suggesting events to check the user's actual availability. Never suggest times that conflict with existing calendar events.
+- ALWAYS call get_calendar before suggesting events to check the user's actual availability. Never suggest times that conflict with existing calendar events. Look at what the calendar events actually are: if you see flights, travel, trips, or out-of-town plans, the user won't be home, so don't suggest local events during that time. Either suggest things at their destination (if you can tell where they're going) or wait until they're back.
 - Check preferences before suggesting (respect hard nos and availability)
 - For proactive morning messages: suggest ONE standout option
 - When the user asks for options or says "what should I do": suggest exactly 3 options, each from a DIFFERENT category (food, drinks, culture, active, low_key, nightlife, outdoors). Always include one low-effort option (e.g. cook dinner together, movie night at home, order takeout and play games).
