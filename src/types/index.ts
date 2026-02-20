@@ -1,8 +1,5 @@
 export interface OnboardingState {
-  homeAddress: string;
-  likedNeighborhoods: string[];
-  avoidedNeighborhoods: string[];
-  maxBudget: number;
+  zipCode: string;
   activities: string[];
   hardNos: string;
   socialFrequency: number;

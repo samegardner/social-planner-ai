@@ -91,7 +91,7 @@ Context:
 - Already suggested event IDs (don't repeat): ${state.suggestedEventIds.join(", ") || "none yet"}
 
 Rules:
-- Check preferences before suggesting (respect budget, neighborhoods, hard nos)
+- Check preferences before suggesting (respect hard nos and availability)
 - Suggest ONE good option at a time, not a list of 5
 - If user says yes: create a calendar hold, ask if they want to invite friends
 - If user says no: ask why briefly, suggest something different

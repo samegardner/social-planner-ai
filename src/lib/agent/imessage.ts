@@ -1,5 +1,6 @@
 import Twilio from "twilio";
 import Database from "better-sqlite3";
+import { execFile } from "child_process";
 import path from "path";
 
 // Apple epoch offset: seconds between Unix epoch (1970) and Apple epoch (2001)
@@ -26,7 +27,15 @@ function normalizePhone(phone: string): string {
   return phone; // already formatted or international
 }
 
-// Send SMS via Twilio API
+function showNotification(text: string): void {
+  const escaped = text.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
+  const script = `display notification "${escaped}" with title "Social Planner"`;
+  execFile("osascript", ["-e", script], (err) => {
+    if (err) console.warn("Notification failed:", err.message);
+  });
+}
+
+// Send SMS via Twilio API (falls back to macOS notification if delivery fails)
 export async function sendMessage(
   phoneNumber: string,
   text: string,
@@ -39,13 +48,31 @@ export async function sendMessage(
   const normalized = normalizePhone(phoneNumber);
   const client = getTwilioClient();
 
-  const msg = await client.messages.create({
-    body: text,
-    from: fromNumber,
-    to: normalized,
-  });
+  try {
+    const msg = await client.messages.create({
+      body: text,
+      from: fromNumber,
+      to: normalized,
+    });
 
-  console.log(`[Twilio] sid=${msg.sid} status=${msg.status} to=${msg.to}`);
+    console.log(`[Twilio] sid=${msg.sid} status=${msg.status} to=${msg.to}`);
+
+    // Check delivery status after a short delay
+    setTimeout(async () => {
+      try {
+        const updated = await client.messages(msg.sid).fetch();
+        if (updated.status === "undelivered" || updated.status === "failed") {
+          console.warn(`[Twilio] Message ${updated.status} (error ${updated.errorCode}). Showing notification instead.`);
+          showNotification(text);
+        }
+      } catch {
+        // Status check failed, not critical
+      }
+    }, 5000);
+  } catch (err) {
+    console.warn("[Twilio] Send failed, falling back to notification:", err instanceof Error ? err.message : err);
+    showNotification(text);
+  }
 }
 
 export function getLatestRowId(phoneNumber: string): number {

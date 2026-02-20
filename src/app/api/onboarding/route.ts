@@ -1,21 +1,18 @@
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { preferences, neighborhoods, activityPreferences, availability, friends } from "@/lib/schema";
+import { preferences, activityPreferences, availability, friends } from "@/lib/schema";
 import { OnboardingState } from "@/types";
 
 export async function POST(request: Request) {
   try {
     const data: OnboardingState = await request.json();
 
-    // Run everything in a transaction
     db.transaction((tx) => {
-      // Upsert preferences
       const existing = tx.select().from(preferences).limit(1).get();
       if (existing) {
         tx.update(preferences)
           .set({
-            homeAddress: data.homeAddress,
-            maxBudget: data.maxBudget,
+            zipCode: data.zipCode,
             hardNos: data.hardNos,
             socialFrequency: data.socialFrequency,
             imessageNumber: data.imessageNumber,
@@ -26,23 +23,13 @@ export async function POST(request: Request) {
       } else {
         tx.insert(preferences)
           .values({
-            homeAddress: data.homeAddress,
-            maxBudget: data.maxBudget,
+            zipCode: data.zipCode,
             hardNos: data.hardNos,
             socialFrequency: data.socialFrequency,
             imessageNumber: data.imessageNumber,
             onboardingCompleted: true,
           })
           .run();
-      }
-
-      // Replace neighborhoods
-      tx.delete(neighborhoods).run();
-      for (const name of data.likedNeighborhoods) {
-        tx.insert(neighborhoods).values({ name, type: "like" }).run();
-      }
-      for (const name of data.avoidedNeighborhoods) {
-        tx.insert(neighborhoods).values({ name, type: "avoid" }).run();
       }
 
       // Replace activity preferences

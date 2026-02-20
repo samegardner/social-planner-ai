@@ -15,6 +15,13 @@
       "when": 1771383211823,
       "tag": "0001_premium_vapor",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1771535114421,
+      "tag": "0002_glorious_solo",
+      "breakpoints": true
     }
   ]
 }

@@ -5,33 +5,26 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { ProgressBar } from "@/components/onboarding/progress-bar";
 import { StepAddress } from "@/components/onboarding/step-address";
-import { StepNeighborhoodsLike } from "@/components/onboarding/step-neighborhoods-like";
-import { StepNeighborhoodsAvoid } from "@/components/onboarding/step-neighborhoods-avoid";
-import { StepBudget } from "@/components/onboarding/step-budget";
 import { StepActivities } from "@/components/onboarding/step-activities";
 import { StepHardNos } from "@/components/onboarding/step-hard-nos";
 import { StepSocialFrequency } from "@/components/onboarding/step-social-frequency";
 import { StepAvailability } from "@/components/onboarding/step-availability";
-import { StepFriends } from "@/components/onboarding/step-friends";
 import { StepImessage } from "@/components/onboarding/step-imessage";
 import { OnboardingState } from "@/types";
 
-const TOTAL_STEPS = 10;
+const TOTAL_STEPS = 6;
 
 export default function OnboardingPage() {
   const router = useRouter();
   const [step, setStep] = useState(0);
   const [saving, setSaving] = useState(false);
   const [state, setState] = useState<OnboardingState>({
-    homeAddress: "",
-    likedNeighborhoods: [],
-    avoidedNeighborhoods: [],
-    maxBudget: 50,
+    zipCode: "",
     activities: [],
     hardNos: "",
     socialFrequency: 2,
     availability: [],
-    friends: [{ name: "", phoneNumber: "" }],
+    friends: [],
     imessageNumber: "",
   });
 
@@ -62,24 +55,16 @@ export default function OnboardingPage() {
   const renderStep = () => {
     switch (step) {
       case 0:
-        return <StepAddress value={state.homeAddress} onChange={(v) => update("homeAddress", v)} />;
+        return <StepAddress value={state.zipCode} onChange={(v) => update("zipCode", v)} />;
       case 1:
-        return <StepNeighborhoodsLike value={state.likedNeighborhoods} onChange={(v) => update("likedNeighborhoods", v)} />;
-      case 2:
-        return <StepNeighborhoodsAvoid value={state.avoidedNeighborhoods} likedNeighborhoods={state.likedNeighborhoods} onChange={(v) => update("avoidedNeighborhoods", v)} />;
-      case 3:
-        return <StepBudget value={state.maxBudget} onChange={(v) => update("maxBudget", v)} />;
-      case 4:
         return <StepActivities value={state.activities} onChange={(v) => update("activities", v)} />;
-      case 5:
+      case 2:
         return <StepHardNos value={state.hardNos} onChange={(v) => update("hardNos", v)} />;
-      case 6:
+      case 3:
         return <StepSocialFrequency value={state.socialFrequency} onChange={(v) => update("socialFrequency", v)} />;
-      case 7:
+      case 4:
         return <StepAvailability value={state.availability} onChange={(v) => update("availability", v)} />;
-      case 8:
-        return <StepFriends value={state.friends} onChange={(v) => update("friends", v)} />;
-      case 9:
+      case 5:
         return <StepImessage value={state.imessageNumber} onChange={(v) => update("imessageNumber", v)} />;
       default:
         return null;

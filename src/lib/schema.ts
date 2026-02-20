@@ -4,6 +4,7 @@ import { sqliteTable, text, integer } from "drizzle-orm/sqlite-core";
 export const preferences = sqliteTable("preferences", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   homeAddress: text("home_address"),
+  zipCode: text("zip_code"),
   maxBudget: integer("max_budget"),
   hardNos: text("hard_nos"),
   socialFrequency: integer("social_frequency").default(2),

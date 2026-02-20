@@ -11,17 +11,19 @@ interface Props {
 export function StepAddress({ value, onChange }: Props) {
   return (
     <div className="space-y-4">
-      <h2 className="text-2xl font-semibold">What's your home address?</h2>
+      <h2 className="text-2xl font-semibold">What's your zip code?</h2>
       <p className="text-muted-foreground">
-        This helps us suggest events near you and calculate commute times.
+        This helps us suggest events near you.
       </p>
       <div className="space-y-2">
-        <Label htmlFor="address">Address</Label>
+        <Label htmlFor="zipcode">Zip code</Label>
         <Input
-          id="address"
-          placeholder="123 Main St, Brooklyn, NY 11201"
+          id="zipcode"
+          placeholder="10003"
           value={value}
           onChange={(e) => onChange(e.target.value)}
+          maxLength={5}
+          inputMode="numeric"
         />
       </div>
     </div>

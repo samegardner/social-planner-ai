@@ -29,7 +29,6 @@ export async function startAgent() {
   console.log(`User phone: ${prefs.imessageNumber} (sends TO this number via Twilio)`);
   console.log(`Bot phone: ${botNumber} (monitors chat.db for replies)`);
   console.log(`Social goal: ${prefs.socialFrequency} events/week`);
-  console.log(`Budget: $${prefs.maxBudget}`);
 
   // 2. Initialize conversation manager (with user's real phone number for sending)
   initConversation(prefs.imessageNumber, prefs.socialFrequency ?? 2);

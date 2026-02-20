@@ -1,0 +1,1 @@
+ALTER TABLE `preferences` ADD `zip_code` text;
