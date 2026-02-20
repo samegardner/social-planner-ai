@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { preferences, activityPreferences, availability, friends } from "@/lib/schema";
 import { OnboardingState } from "@/types";
+import { startAgent } from "@/lib/agent";
+import { runScraper } from "@/lib/scraper";
 
 export async function POST(request: Request) {
   try {
@@ -52,6 +54,10 @@ export async function POST(request: Request) {
         }
       }
     });
+
+    // Fire-and-forget: start agent and scrape events immediately
+    startAgent().catch(console.error);
+    runScraper().catch(console.error);
 
     return NextResponse.json({ success: true });
   } catch (error) {
