@@ -9,7 +9,7 @@ import { StepActivities } from "@/components/onboarding/step-activities";
 import { StepHardNos } from "@/components/onboarding/step-hard-nos";
 import { StepSocialFrequency } from "@/components/onboarding/step-social-frequency";
 import { StepAvailability } from "@/components/onboarding/step-availability";
-import { StepImessage } from "@/components/onboarding/step-imessage";
+import { StepEmail } from "@/components/onboarding/step-email";
 import { OnboardingState } from "@/types";
 
 const TOTAL_STEPS = 6;
@@ -25,7 +25,7 @@ export default function OnboardingPage() {
     socialFrequency: 2,
     availability: [],
     friends: [],
-    imessageNumber: "",
+    email: "",
   });
 
   const update = <K extends keyof OnboardingState>(key: K, value: OnboardingState[K]) => {
@@ -65,7 +65,7 @@ export default function OnboardingPage() {
       case 4:
         return <StepAvailability value={state.availability} onChange={(v) => update("availability", v)} />;
       case 5:
-        return <StepImessage value={state.imessageNumber} onChange={(v) => update("imessageNumber", v)} />;
+        return <StepEmail value={state.email} onChange={(v) => update("email", v)} />;
       default:
         return null;
     }

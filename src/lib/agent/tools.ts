@@ -113,22 +113,26 @@ export const agentTools: Tool[] = [
     },
   },
   {
-    name: "send_imessage",
+    name: "send_email",
     description:
-      "Send an iMessage to a specific phone number. Use this to reach out to friends on the user's behalf (only after the user approves the message).",
+      "Send an email to a specific address. Use this to reach out to friends on the user's behalf (only after the user approves the message).",
     input_schema: {
       type: "object" as const,
       properties: {
-        phone_number: {
+        email: {
           type: "string",
-          description: "Phone number to text (e.g. +12125551234)",
+          description: "Email address to send to",
+        },
+        subject: {
+          type: "string",
+          description: "Email subject line",
         },
         message: {
           type: "string",
           description: "The message to send",
         },
       },
-      required: ["phone_number", "message"],
+      required: ["email", "subject", "message"],
     },
   },
   {

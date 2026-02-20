@@ -18,7 +18,7 @@ export async function GET() {
       zipCode: prefs?.zipCode ?? "",
       hardNos: prefs?.hardNos ?? "",
       socialFrequency: prefs?.socialFrequency ?? 2,
-      imessageNumber: prefs?.imessageNumber ?? "",
+      email: prefs?.email ?? "",
       onboardingCompleted: prefs?.onboardingCompleted ?? false,
       activities: activities.filter((a) => a.enabled).map((a) => a.activity),
       availability: avail.filter((a) => a.enabled).map((a) => a.slot),
@@ -39,7 +39,7 @@ export async function PUT(request: Request) {
       if (data.zipCode !== undefined) scalarFields.zipCode = data.zipCode;
       if (data.hardNos !== undefined) scalarFields.hardNos = data.hardNos;
       if (data.socialFrequency !== undefined) scalarFields.socialFrequency = data.socialFrequency;
-      if (data.imessageNumber !== undefined) scalarFields.imessageNumber = data.imessageNumber;
+      if (data.email !== undefined) scalarFields.email = data.email;
 
       if (Object.keys(scalarFields).length > 0) {
         scalarFields.updatedAt = new Date().toISOString();

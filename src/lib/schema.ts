@@ -9,6 +9,7 @@ export const preferences = sqliteTable("preferences", {
   hardNos: text("hard_nos"),
   socialFrequency: integer("social_frequency").default(2),
   imessageNumber: text("imessage_number"),
+  email: text("email"),
   onboardingCompleted: integer("onboarding_completed", { mode: "boolean" }).default(false),
   createdAt: text("created_at").default("(datetime('now'))"),
   updatedAt: text("updated_at").default("(datetime('now'))"),

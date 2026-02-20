@@ -349,26 +349,26 @@ export default function PreferencesPage() {
           </CardContent>
         </Card>
 
-        {/* Phone Number */}
+        {/* Email */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-lg">Phone Number</CardTitle>
-            {editing !== "imessage" && (
-              <Button variant="ghost" size="sm" onClick={() => startEdit("imessage")}>
+            <CardTitle className="text-lg">Email</CardTitle>
+            {editing !== "email" && (
+              <Button variant="ghost" size="sm" onClick={() => startEdit("email")}>
                 Edit
               </Button>
             )}
           </CardHeader>
           <CardContent>
-            {editing === "imessage" ? (
+            {editing === "email" ? (
               <div className="space-y-3">
                 <Input
-                  defaultValue={prefs.imessageNumber}
-                  onChange={(e) => setDraft({ imessageNumber: e.target.value })}
-                  type="tel"
+                  defaultValue={prefs.email}
+                  onChange={(e) => setDraft({ email: e.target.value })}
+                  type="email"
                 />
                 <div className="flex gap-2">
-                  <Button size="sm" onClick={() => savePreferences({ imessageNumber: draft.imessageNumber ?? prefs.imessageNumber })}>
+                  <Button size="sm" onClick={() => savePreferences({ email: draft.email ?? prefs.email })}>
                     Save
                   </Button>
                   <Button size="sm" variant="ghost" onClick={() => setEditing(null)}>
@@ -377,7 +377,7 @@ export default function PreferencesPage() {
                 </div>
               </div>
             ) : (
-              <p>{prefs.imessageNumber || "Not set"}</p>
+              <p>{prefs.email || "Not set"}</p>
             )}
           </CardContent>
         </Card>

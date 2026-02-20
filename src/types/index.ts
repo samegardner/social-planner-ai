@@ -5,7 +5,8 @@ export interface OnboardingState {
   socialFrequency: number;
   availability: string[];
   friends: { name: string; phoneNumber: string }[];
-  imessageNumber: string;
+  email: string;
+  imessageNumber?: string;
 }
 
 export interface Friend {

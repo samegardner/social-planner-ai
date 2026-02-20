@@ -3,7 +3,7 @@ import { getCalendar } from "./tools/get-calendar";
 import { createCalendarHold } from "./tools/create-calendar-hold";
 import { getPreferences } from "./tools/get-preferences";
 import { getFriends } from "./tools/get-friends";
-import { sendIMessage } from "./tools/send-imessage";
+import { sendEmailTool } from "./tools/send-email";
 import { logInteraction } from "./tools/log-interaction";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -24,8 +24,8 @@ export async function executeTool(
       return getPreferences();
     case "get_friends":
       return getFriends();
-    case "send_imessage":
-      return sendIMessage(input);
+    case "send_email":
+      return sendEmailTool(input);
     case "log_interaction":
       return logInteraction(input);
     default:

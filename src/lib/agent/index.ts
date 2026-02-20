@@ -23,21 +23,22 @@ export async function startAgent() {
     );
   }
 
-  if (!prefs.imessageNumber) {
-    throw new Error("No iMessage number set. Update preferences first.");
+  if (!prefs.email) {
+    throw new Error("No email set. Update preferences first.");
   }
 
-  const botNumber = process.env.TELNYX_PHONE_NUMBER;
-  if (!botNumber) {
-    throw new Error("Missing TELNYX_PHONE_NUMBER in env");
+  if (!process.env.RESEND_API_KEY) {
+    throw new Error("Missing RESEND_API_KEY in env");
+  }
+  if (!process.env.RESEND_FROM_EMAIL) {
+    throw new Error("Missing RESEND_FROM_EMAIL in env");
   }
 
-  console.log(`User phone: ${prefs.imessageNumber}`);
-  console.log(`Bot phone: ${botNumber}`);
+  console.log(`User email: ${prefs.email}`);
   console.log(`Social goal: ${prefs.socialFrequency} events/week`);
 
   // 2. Initialize conversation manager
-  initConversation(prefs.imessageNumber, prefs.socialFrequency ?? 2);
+  initConversation(prefs.email, prefs.socialFrequency ?? 2);
 
   // 3. Initialize Google Calendar (optional)
   try {

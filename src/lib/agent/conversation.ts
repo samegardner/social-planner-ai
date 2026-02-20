@@ -4,7 +4,7 @@ import fs from "fs";
 import path from "path";
 import { agentTools } from "./tools";
 import { executeTool } from "./tool-handlers";
-import { sendMessage } from "./imessage";
+import { sendEmail } from "./email";
 
 const STATE_PATH = path.join(process.cwd(), "data", "conversations.json");
 const MAX_MESSAGES = 30;
@@ -32,12 +32,12 @@ const defaultState: ConversationState = {
 
 let state: ConversationState = { ...defaultState };
 let anthropic: Anthropic;
-let userPhoneNumber: string;
+let userEmail: string;
 let socialGoal: number;
 
-export function initConversation(phoneNumber: string, socialFrequency: number) {
+export function initConversation(email: string, socialFrequency: number) {
   anthropic = new Anthropic();
-  userPhoneNumber = phoneNumber;
+  userEmail = email;
   socialGoal = socialFrequency;
   loadState();
 }
@@ -56,22 +56,22 @@ function buildSystemPrompt(): string {
     year: "numeric",
   });
 
-  return `You are Sam's social planner, texting via SMS. Sound like a friend, not a bot.
+  return `You are Sam's social planner, emailing event suggestions. Sound like a friend, not a bot.
 
 Personality:
 - Casual, concise, enthusiastic but not over the top
-- Natural texting style (lowercase ok)
+- Friendly tone, like a message from a friend
 - Never say "I'm an AI" or "as your social planner"
 
 Formatting rules (STRICT):
-- ALWAYS reply in ONE single message. Never send multiple messages in a row.
-- Keep it SHORT. 2-4 lines max for a suggestion, 1-2 lines for a follow-up.
-- Use bullet points (the actual bullet character "•") when listing options or details
+- ALWAYS reply in ONE single email. Never send multiple emails in a row.
+- Keep it concise. A short paragraph for a suggestion, 1-2 sentences for a follow-up.
+- Use bullet points when listing options or details
 - Example suggestion format:
-  "jason isbell at radio city, sat night 8pm
-  • $$, midtown
-  • chill vibes, great live music
-  down?"
+  "Jason Isbell at Radio City, Saturday night at 8pm
+  • $$, Midtown
+  • Chill vibes, great live music
+  Down?"
 
 Context:
 - Today is ${dayName}, ${dateStr}
@@ -217,11 +217,13 @@ async function runToolLoop(): Promise<void> {
         .trim();
 
       if (responseText) {
+        // Generate a short subject from the first line of the response
+        const subject = responseText.split("\n")[0].substring(0, 60) || "social plans";
         try {
-          await sendMessage(userPhoneNumber, responseText);
-          console.log(`Sent SMS: ${responseText.substring(0, 80)}...`);
+          await sendEmail(userEmail, subject, responseText);
+          console.log(`Sent email: ${responseText.substring(0, 80)}...`);
         } catch (err) {
-          console.error("Failed to send iMessage:", err);
+          console.error("Failed to send email:", err);
         }
       }
     }

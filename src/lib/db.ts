@@ -21,6 +21,7 @@ sqlite.exec(`
     hard_nos TEXT,
     social_frequency INTEGER DEFAULT 2,
     imessage_number TEXT,
+    email TEXT,
     onboarding_completed INTEGER DEFAULT 0,
     created_at TEXT DEFAULT (datetime('now')),
     updated_at TEXT DEFAULT (datetime('now'))
@@ -95,5 +96,12 @@ sqlite.exec(`
     created_at TEXT DEFAULT (datetime('now'))
   );
 `);
+
+// Migrate: add email column if missing (for existing databases)
+const cols = sqlite.prepare(`PRAGMA table_info(preferences)`).all() as { name: string }[];
+const hasEmail = cols.some((col) => col.name === "email");
+if (!hasEmail) {
+  sqlite.exec(`ALTER TABLE preferences ADD COLUMN email TEXT`);
+}
 
 export const db = drizzle(sqlite, { schema });

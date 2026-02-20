@@ -19,7 +19,7 @@ export async function POST(request: Request) {
             zipCode: data.zipCode,
             hardNos: data.hardNos,
             socialFrequency: data.socialFrequency,
-            imessageNumber: data.imessageNumber,
+            email: data.email,
             onboardingCompleted: true,
             updatedAt: new Date().toISOString(),
           })
@@ -30,7 +30,7 @@ export async function POST(request: Request) {
             zipCode: data.zipCode,
             hardNos: data.hardNos,
             socialFrequency: data.socialFrequency,
-            imessageNumber: data.imessageNumber,
+            email: data.email,
             onboardingCompleted: true,
           })
           .run();
