@@ -6,8 +6,10 @@ import { startAgent } from "@/lib/agent";
 import { runScraper } from "@/lib/scraper";
 
 export async function POST(request: Request) {
+  console.log("[onboarding] POST received");
   try {
     const data: OnboardingState = await request.json();
+    console.log("[onboarding] Parsed data, starting transaction...");
 
     db.transaction((tx) => {
       const existing = tx.select().from(preferences).limit(1).get();
@@ -55,13 +57,20 @@ export async function POST(request: Request) {
       }
     });
 
-    // Fire-and-forget: start agent and scrape events immediately
-    startAgent().catch(console.error);
-    runScraper().catch(console.error);
+    console.log("[onboarding] Transaction complete, starting agent and scraper...");
 
+    // Fire-and-forget: start agent and scrape events immediately
+    startAgent()
+      .then(() => console.log("[onboarding] Agent started successfully"))
+      .catch((err) => console.error("[onboarding] Agent failed:", err));
+    runScraper()
+      .then((results) => console.log("[onboarding] Scraper finished:", JSON.stringify(results)))
+      .catch((err) => console.error("[onboarding] Scraper failed:", err));
+
+    console.log("[onboarding] Returning success response");
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Onboarding save error:", error);
+    console.error("[onboarding] Save error:", error);
     return NextResponse.json({ error: "Failed to save onboarding data" }, { status: 500 });
   }
 }
