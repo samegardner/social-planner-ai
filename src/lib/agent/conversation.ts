@@ -5,6 +5,7 @@ import path from "path";
 import { agentTools } from "./tools";
 import { executeTool } from "./tool-handlers";
 import { sendEmail } from "./email";
+import { getCalendarEvents } from "./calendar";
 
 const STATE_PATH = path.join(process.cwd(), "data", "conversations.json");
 const MAX_MESSAGES = 30;
@@ -46,7 +47,7 @@ export function getState(): ConversationState {
   return state;
 }
 
-function buildSystemPrompt(): string {
+async function buildSystemPrompt(): Promise<string> {
   const now = new Date();
   const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
   const dayName = days[now.getDay()];
@@ -55,6 +56,45 @@ function buildSystemPrompt(): string {
     day: "numeric",
     year: "numeric",
   });
+
+  // Fetch rolling 2-week calendar
+  let calendarSection = "";
+  try {
+    const startDate = now.toISOString().split("T")[0];
+    const endDate = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000)
+      .toISOString()
+      .split("T")[0];
+    const events = await getCalendarEvents(startDate, endDate);
+
+    if (events.length > 0) {
+      // Group events by day
+      const byDay = new Map<string, typeof events>();
+      for (const event of events) {
+        const eventDate = event.start.split("T")[0];
+        if (!byDay.has(eventDate)) byDay.set(eventDate, []);
+        byDay.get(eventDate)!.push(event);
+      }
+
+      const lines: string[] = [];
+      for (const [date, dayEvents] of byDay) {
+        const d = new Date(date + "T12:00:00");
+        const label = d.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
+        const items = dayEvents.map((e) => {
+          const startTime = e.start.includes("T")
+            ? new Date(e.start).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })
+            : "all day";
+          const endTime = e.end.includes("T")
+            ? new Date(e.end).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" })
+            : "";
+          return endTime ? `${e.summary} (${startTime}-${endTime})` : `${e.summary} (${startTime})`;
+        });
+        lines.push(`- ${label}: ${items.join(", ")}`);
+      }
+      calendarSection = `\n- Calendar (next 2 weeks):\n${lines.join("\n")}`;
+    }
+  } catch (err) {
+    console.warn("Failed to fetch calendar for system prompt:", err);
+  }
 
   return `You are Sam's social planner, emailing event suggestions. Sound like a friend, not a bot.
 
@@ -78,10 +118,10 @@ Context:
 - Today is ${dayName}, ${dateStr}
 - This week's social count: ${state.weekSocialCount} out of ${socialGoal} goal
 - ${state.activeThread ? "Active suggestion being discussed." : "No active suggestion."}
-- Already suggested event IDs (don't repeat): ${state.suggestedEventIds.join(", ") || "none yet"}
+- Already suggested event IDs (don't repeat): ${state.suggestedEventIds.join(", ") || "none yet"}${calendarSection}
 
 Rules:
-- ALWAYS call get_calendar before suggesting events. Think carefully about what the calendar events mean for the user's availability and location before making any suggestions.
+- Think carefully about what the calendar events mean for the user's availability and location before making any suggestions.
 - Check preferences before suggesting (respect hard nos and availability)
 - For proactive morning messages: suggest ONE standout option
 - When the user asks for options or says "what should I do": suggest exactly 3 options, each from a DIFFERENT category (food, drinks, culture, active, low_key, nightlife, outdoors). Always include one low-effort option (e.g. cook dinner together, movie night at home, order takeout and play games).
@@ -131,6 +171,7 @@ async function runToolLoop(): Promise<void> {
   while (true) {
     let response;
     try {
+      const systemPrompt = await buildSystemPrompt();
       response = await anthropic.messages.create({
         model: "claude-sonnet-4-5-20250929",
         max_tokens: 16000,
@@ -138,7 +179,7 @@ async function runToolLoop(): Promise<void> {
           type: "enabled",
           budget_tokens: 10000,
         },
-        system: buildSystemPrompt(),
+        system: systemPrompt,
         messages: state.messages,
         tools: agentTools,
       });
@@ -231,8 +272,7 @@ async function runToolLoop(): Promise<void> {
         .trim();
 
       if (responseText) {
-        // Generate a short subject from the first line of the response
-        const subject = responseText.split("\n")[0].substring(0, 60) || "social plans";
+        const subject = extractSubject(responseText);
         try {
           await sendEmail(userEmail, subject, responseText);
           console.log(`Sent email: ${responseText.substring(0, 80)}...`);
@@ -250,6 +290,16 @@ async function runToolLoop(): Promise<void> {
     saveState();
     break; // done with this turn
   }
+}
+
+function extractSubject(text: string): string {
+  const lines = text
+    .split("\n")
+    .map((l) => l.replace(/\*\*/g, "").trim())
+    .filter(Boolean);
+  // Skip short greetings like "Hey!" or "What's up"
+  const meaningful = lines.find((l) => l.length > 15) || lines[0] || "";
+  return meaningful.substring(0, 60) || "social plans this week";
 }
 
 function trimHistory() {

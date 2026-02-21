@@ -3,6 +3,12 @@ import { processUserMessage, resetConversation } from "@/lib/agent/conversation"
 import { startAgent, isAgentInitialized } from "@/lib/agent";
 
 export async function POST(request: Request) {
+  const authHeader = request.headers.get("authorization");
+  const expected = process.env.TEST_API_KEY;
+  if (!expected || authHeader !== `Bearer ${expected}`) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const { text } = await request.json();
   if (!text) {
     return NextResponse.json({ error: "Missing 'text' field" }, { status: 400 });

@@ -18,6 +18,15 @@ export function loadTokens(): Record<string, unknown> | null {
     const raw = fs.readFileSync(TOKENS_PATH, "utf-8");
     return JSON.parse(raw);
   } catch {
+    // Fall back to env var (for Railway where the token file doesn't exist)
+    const envTokens = process.env.GOOGLE_TOKENS;
+    if (envTokens) {
+      const tokens = JSON.parse(envTokens);
+      fs.mkdirSync(path.dirname(TOKENS_PATH), { recursive: true });
+      fs.writeFileSync(TOKENS_PATH, JSON.stringify(tokens, null, 2));
+      console.log("Seeded Google tokens from GOOGLE_TOKENS env var.");
+      return tokens;
+    }
     return null;
   }
 }
