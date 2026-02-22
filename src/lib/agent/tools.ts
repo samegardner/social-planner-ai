@@ -136,6 +136,26 @@ export const agentTools: Tool[] = [
     },
   },
   {
+    name: "search_web",
+    description:
+      "Search the web for events, activities, classes, restaurants, or anything else in NYC. Use this when the events database doesn't have what the user wants or returns too few results.",
+    input_schema: {
+      type: "object" as const,
+      properties: {
+        query: {
+          type: "string",
+          description:
+            "Freeform search query (e.g. 'pottery classes in Brooklyn this weekend')",
+        },
+        max_results: {
+          type: "number",
+          description: "Max results to return (default 5, max 10)",
+        },
+      },
+      required: ["query"],
+    },
+  },
+  {
     name: "log_interaction",
     description:
       "Record a suggestion and the user's response for learning. Log every suggestion you make and the outcome (accepted, declined, modified).",

@@ -108,6 +108,7 @@ Formatting rules (STRICT):
 - Keep it concise. A short paragraph for a suggestion, 1-2 sentences for a follow-up.
 - Use markdown formatting: **bold** for event names, bullet points (- ) for details
 - Give actual estimated costs in dollars (e.g. "$15 per person", "$40-60 for two"). Never use vague $/$$/$$$ symbols. Estimate from venue type, event category, and any price data available.
+- Start every email with a subject line on its own line, e.g. "Subject: Weekend plans". Keep it short (under 50 chars), catchy, and relevant. This line will be extracted as the email subject and removed from the body.
 - Example suggestion format:
   "**Jason Isbell at Radio City**, Saturday night at 8pm
   - ~$45 per ticket, Midtown
@@ -123,13 +124,27 @@ Context:
 Rules:
 - Think carefully about what the calendar events mean for the user's availability and location before making any suggestions.
 - Check preferences before suggesting (respect hard nos and availability)
-- For proactive morning messages: suggest ONE standout option
-- When the user asks for options or says "what should I do": suggest exactly 3 options, each from a DIFFERENT category (food, drinks, culture, active, low_key, nightlife, outdoors). Always include one low-effort option (e.g. cook dinner together, movie night at home, order takeout and play games).
-- If user says yes: create a calendar hold, ask if they want to invite friends
+- When suggesting plans (proactive or on request):
+  1. RESEARCH PHASE: Query events and search the web across multiple categories to understand what's available. Do this BEFORE composing your email.
+  2. FIRST EMAIL: Present 3-4 categories, each with one specific teaser from your research. Keep it scannable. Example format:
+     "Few directions for this weekend:
+     **Live music** - Jason Isbell is at Radio City Saturday
+     **Try a new restaurant** - new tasting menu spot in Prospect Heights
+     **Something active** - Brooklyn Boulders has open climb Sunday
+     **Low-key night** - cook dinner together or movie night at home
+     What sounds good? I'll find more options for whatever catches your eye."
+  3. DRILL-DOWN: When the user picks a category, first call get_friends, then present the best 5 options in that category with full details (name, date/time, estimated cost, location, and source URL for web results). You already have the data from step 1. After the options, ask who they want to bring. List each friend by name and include "Just me" as an option. Example:
+     "Who's coming?
+     - Jake
+     - Maria
+     - Chris
+     - Just me"
+  4. COMMIT: When the user picks an event and who's coming, create a calendar hold and confirm.
+- If user says yes to an event: create a calendar hold
 - If user says no: ask why briefly, suggest something different
-- When messaging friends: show the draft first, wait for approval
 - Log every suggestion and outcome using log_interaction
-- If user asks something unrelated to social plans, be helpful but brief`;
+- If user asks something unrelated to social plans, be helpful but brief
+- Use query_events and search_web during the research phase. When presenting web search results, always include the source URL.`;
 }
 
 export async function processUserMessage(text: string): Promise<void> {
@@ -159,7 +174,7 @@ export async function startProactiveSuggestion(): Promise<void> {
   state.messages.push({
     role: "user",
     content:
-      "[SYSTEM] It's morning. Look at the user's preferences and suggest one great event if they're under their social goal. Text them naturally, like you just thought of something cool.",
+      "[SYSTEM] It's morning and the user is under their social goal. Follow the suggestion flow: research what's available, then send the category email with 3-4 directions.",
   });
 
   await runToolLoop();
@@ -272,10 +287,10 @@ async function runToolLoop(): Promise<void> {
         .trim();
 
       if (responseText) {
-        const subject = extractSubject(responseText);
+        const { subject, body } = extractSubject(responseText);
         try {
-          await sendEmail(userEmail, subject, responseText);
-          console.log(`Sent email: ${responseText.substring(0, 80)}...`);
+          await sendEmail(userEmail, subject, body);
+          console.log(`Sent email: ${body.substring(0, 80)}...`);
         } catch (err) {
           console.error("Failed to send email:", err);
         }
@@ -292,14 +307,28 @@ async function runToolLoop(): Promise<void> {
   }
 }
 
-function extractSubject(text: string): string {
-  const lines = text
-    .split("\n")
+function extractSubject(text: string): { subject: string; body: string } {
+  const lines = text.split("\n");
+  // Look for a "Subject: ..." line at the top (before any real content)
+  for (let i = 0; i < Math.min(lines.length, 3); i++) {
+    const match = lines[i].match(/^Subject:\s*(.+)/i);
+    if (match) {
+      const subject = match[1].trim().substring(0, 60);
+      const body = [...lines.slice(0, i), ...lines.slice(i + 1)]
+        .join("\n")
+        .trim();
+      return { subject, body };
+    }
+  }
+  // Fallback: use first meaningful line
+  const cleaned = lines
     .map((l) => l.replace(/\*\*/g, "").trim())
     .filter(Boolean);
-  // Skip short greetings like "Hey!" or "What's up"
-  const meaningful = lines.find((l) => l.length > 15) || lines[0] || "";
-  return meaningful.substring(0, 60) || "social plans this week";
+  const meaningful = cleaned.find((l) => l.length > 15) || cleaned[0] || "";
+  return {
+    subject: meaningful.substring(0, 60) || "social plans this week",
+    body: text,
+  };
 }
 
 function trimHistory() {

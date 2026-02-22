@@ -5,6 +5,7 @@ import { getPreferences } from "./tools/get-preferences";
 import { getFriends } from "./tools/get-friends";
 import { sendEmailTool } from "./tools/send-email";
 import { logInteraction } from "./tools/log-interaction";
+import { searchWeb } from "./tools/search-web";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ToolInput = any;
@@ -26,6 +27,8 @@ export async function executeTool(
       return getFriends();
     case "send_email":
       return sendEmailTool(input);
+    case "search_web":
+      return searchWeb(input);
     case "log_interaction":
       return logInteraction(input);
     default:
