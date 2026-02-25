@@ -1,4 +1,8 @@
 import "dotenv/config";
+
+// Suppress actual email delivery in test mode
+process.env.SEND_EMAILS ??= "false";
+
 import { db } from "../src/lib/db";
 import { preferences } from "../src/lib/schema";
 import { eq } from "drizzle-orm";

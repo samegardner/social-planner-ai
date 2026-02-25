@@ -4,7 +4,6 @@ import fs from "fs";
 import path from "path";
 import { agentTools } from "./tools";
 import { executeTool } from "./tool-handlers";
-import { sendEmail } from "./email";
 import { getCalendarEvents } from "./calendar";
 
 const STATE_PATH = path.join(process.cwd(), "data", "conversations.json");
@@ -104,11 +103,11 @@ Personality:
 - Never say "I'm an AI" or "as your social planner"
 
 Formatting rules (STRICT):
+- ALWAYS use the send_email tool to deliver your message. Never just write text without sending it.
 - ALWAYS reply in ONE single email. Never send multiple emails in a row.
 - Keep it concise. A short paragraph for a suggestion, 1-2 sentences for a follow-up.
 - Use markdown formatting: **bold** for event names, bullet points (- ) for details
 - Give actual estimated costs in dollars (e.g. "$15 per person", "$40-60 for two"). Never use vague $/$$/$$$ symbols. Estimate from venue type, event category, and any price data available.
-- Start every email with a subject line on its own line, e.g. "Subject: Weekend plans". Keep it short (under 50 chars), catchy, and relevant. This line will be extracted as the email subject and removed from the body.
 - Example suggestion format:
   "**Jason Isbell at Radio City**, Saturday night at 8pm
   - ~$45 per ticket, Midtown
@@ -245,6 +244,7 @@ async function runToolLoop(): Promise<void> {
           result = await executeTool(
             block.name,
             block.input as Record<string, unknown>,
+            { userEmail },
           );
         } catch (err) {
           console.error(`Tool ${block.name} failed:`, err);
@@ -279,7 +279,8 @@ async function runToolLoop(): Promise<void> {
       continue; // loop back for Claude to process tool results
     }
 
-    // No tool use, extract text response and send via iMessage
+    // No tool use — the agent should have already sent the email via
+    // the send_email tool. Just log the final text for debugging.
     if (textBlocks.length > 0) {
       const responseText = textBlocks
         .map((b) => (b.type === "text" ? b.text : ""))
@@ -287,13 +288,7 @@ async function runToolLoop(): Promise<void> {
         .trim();
 
       if (responseText) {
-        const { subject, body } = extractSubject(responseText);
-        try {
-          await sendEmail(userEmail, subject, body);
-          console.log(`Sent email: ${body.substring(0, 80)}...`);
-        } catch (err) {
-          console.error("Failed to send email:", err);
-        }
+        console.log(`[Agent final text] ${responseText.substring(0, 120)}...`);
       }
     }
 
@@ -305,30 +300,6 @@ async function runToolLoop(): Promise<void> {
     saveState();
     break; // done with this turn
   }
-}
-
-function extractSubject(text: string): { subject: string; body: string } {
-  const lines = text.split("\n");
-  // Look for a "Subject: ..." line at the top (before any real content)
-  for (let i = 0; i < Math.min(lines.length, 3); i++) {
-    const match = lines[i].match(/^Subject:\s*(.+)/i);
-    if (match) {
-      const subject = match[1].trim().substring(0, 60);
-      const body = [...lines.slice(0, i), ...lines.slice(i + 1)]
-        .join("\n")
-        .trim();
-      return { subject, body };
-    }
-  }
-  // Fallback: use first meaningful line
-  const cleaned = lines
-    .map((l) => l.replace(/\*\*/g, "").trim())
-    .filter(Boolean);
-  const meaningful = cleaned.find((l) => l.length > 15) || cleaned[0] || "";
-  return {
-    subject: meaningful.substring(0, 60) || "social plans this week",
-    body: text,
-  };
 }
 
 function trimHistory() {

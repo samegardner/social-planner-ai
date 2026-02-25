@@ -10,9 +10,14 @@ import { searchWeb } from "./tools/search-web";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ToolInput = any;
 
+export interface ToolContext {
+  userEmail: string;
+}
+
 export async function executeTool(
   name: string,
   input: ToolInput,
+  ctx: ToolContext,
 ): Promise<unknown> {
   switch (name) {
     case "query_events":
@@ -26,7 +31,7 @@ export async function executeTool(
     case "get_friends":
       return getFriends();
     case "send_email":
-      return sendEmailTool(input);
+      return sendEmailTool(input, ctx.userEmail);
     case "search_web":
       return searchWeb(input);
     case "log_interaction":

@@ -115,24 +115,20 @@ export const agentTools: Tool[] = [
   {
     name: "send_email",
     description:
-      "Send an email to a specific address. Use this to reach out to friends on the user's behalf (only after the user approves the message).",
+      "Send an email to the user. Use this for ALL outgoing emails: suggestions, follow-ups, drill-downs, etc. The recipient is always the user (set automatically).",
     input_schema: {
       type: "object" as const,
       properties: {
-        email: {
-          type: "string",
-          description: "Email address to send to",
-        },
         subject: {
           type: "string",
-          description: "Email subject line",
+          description: "Email subject line. Keep it short (under 50 chars), catchy, and relevant.",
         },
         message: {
           type: "string",
-          description: "The message to send",
+          description: "The message body to send",
         },
       },
-      required: ["email", "subject", "message"],
+      required: ["subject", "message"],
     },
   },
   {

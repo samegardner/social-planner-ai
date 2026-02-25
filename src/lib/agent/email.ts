@@ -70,13 +70,19 @@ export async function sendEmail(
   subject: string,
   body: string,
 ): Promise<void> {
+  const html = markdownToHtml(body);
+  const text = stripMarkdown(body);
+
+  if (process.env.SEND_EMAILS === "false") {
+    console.log(`[Email suppressed] to=${to} subject="${subject}"`);
+    console.log(`[Email body]\n${text}`);
+    return;
+  }
+
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.RESEND_FROM_EMAIL;
   if (!apiKey) throw new Error("Missing RESEND_API_KEY in env");
   if (!from) throw new Error("Missing RESEND_FROM_EMAIL in env");
-
-  const html = markdownToHtml(body);
-  const text = stripMarkdown(body);
 
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
