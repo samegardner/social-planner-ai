@@ -26,30 +26,41 @@ export interface CalendarEvent {
   attendees: string[];
 }
 
+const CALENDAR_IDS = ["primary", "gardner@stainless.com"];
+
 export async function getCalendarEvents(
   startDate: string,
   endDate: string,
 ): Promise<CalendarEvent[]> {
   const cal = getCalendar();
-  const res = await cal.events.list({
-    calendarId: "primary",
-    timeMin: new Date(startDate).toISOString(),
-    timeMax: new Date(endDate).toISOString(),
-    singleEvents: true,
-    orderBy: "startTime",
-    maxResults: 100,
-  });
+  const allEvents: CalendarEvent[] = [];
 
-  return (res.data.items || []).map((event) => ({
-    id: event.id || "",
-    summary: event.summary || "(no title)",
-    start: event.start?.dateTime || event.start?.date || "",
-    end: event.end?.dateTime || event.end?.date || "",
-    status: event.status || "confirmed",
-    location: event.location || "",
-    description: event.description || "",
-    attendees: (event.attendees || []).map((a) => a.email || "").filter(Boolean),
-  }));
+  for (const calendarId of CALENDAR_IDS) {
+    const res = await cal.events.list({
+      calendarId,
+      timeMin: new Date(startDate).toISOString(),
+      timeMax: new Date(endDate).toISOString(),
+      singleEvents: true,
+      orderBy: "startTime",
+      maxResults: 100,
+    });
+
+    for (const event of res.data.items || []) {
+      allEvents.push({
+        id: event.id || "",
+        summary: event.summary || "(no title)",
+        start: event.start?.dateTime || event.start?.date || "",
+        end: event.end?.dateTime || event.end?.date || "",
+        status: event.status || "confirmed",
+        location: event.location || "",
+        description: event.description || "",
+        attendees: (event.attendees || []).map((a) => a.email || "").filter(Boolean),
+      });
+    }
+  }
+
+  allEvents.sort((a, b) => a.start.localeCompare(b.start));
+  return allEvents;
 }
 
 // Availability windows mapped to day/time ranges
