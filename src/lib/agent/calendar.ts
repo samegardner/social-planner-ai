@@ -21,6 +21,9 @@ export interface CalendarEvent {
   start: string;
   end: string;
   status: string;
+  location: string;
+  description: string;
+  attendees: string[];
 }
 
 export async function getCalendarEvents(
@@ -43,6 +46,9 @@ export async function getCalendarEvents(
     start: event.start?.dateTime || event.start?.date || "",
     end: event.end?.dateTime || event.end?.date || "",
     status: event.status || "confirmed",
+    location: event.location || "",
+    description: event.description || "",
+    attendees: (event.attendees || []).map((a) => a.email || "").filter(Boolean),
   }));
 }
 
