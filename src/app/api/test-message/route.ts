@@ -27,7 +27,7 @@ export async function POST(request: Request) {
     console.error("[Test] processUserMessage error:", err);
   });
 
-  return NextResponse.json({ ok: true, message: "Processing, check email shortly" });
+  return NextResponse.json({ ok: true, message: "Processing, check iMessage shortly" });
 }
 
 export async function DELETE() {

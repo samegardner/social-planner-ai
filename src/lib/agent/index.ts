@@ -3,6 +3,7 @@ import { preferences } from "@/lib/schema";
 import { initConversation } from "./conversation";
 import { initCalendar } from "./calendar";
 import { startScheduler, stopScheduler } from "./scheduler";
+import { startTelegramPoller, stopTelegramPoller } from "./telegram-poller";
 
 let initialized = false;
 
@@ -23,22 +24,20 @@ export async function startAgent() {
     );
   }
 
-  if (!prefs.email) {
-    throw new Error("No email set. Update preferences first.");
+  if (!process.env.TELEGRAM_BOT_TOKEN) {
+    throw new Error("Missing TELEGRAM_BOT_TOKEN in env");
+  }
+  if (!process.env.TELEGRAM_CHAT_ID) {
+    throw new Error("Missing TELEGRAM_CHAT_ID in env");
   }
 
-  if (!process.env.RESEND_API_KEY) {
-    throw new Error("Missing RESEND_API_KEY in env");
-  }
-  if (!process.env.RESEND_FROM_EMAIL) {
-    throw new Error("Missing RESEND_FROM_EMAIL in env");
-  }
+  const chatId = process.env.TELEGRAM_CHAT_ID;
 
-  console.log(`User email: ${prefs.email}`);
+  console.log(`Telegram chat ID: ${chatId}`);
   console.log(`Social goal: ${prefs.socialFrequency} events/week`);
 
   // 2. Initialize conversation manager
-  initConversation(prefs.email, prefs.socialFrequency ?? 2);
+  initConversation(chatId, prefs.socialFrequency ?? 2);
 
   // 3. Initialize Google Calendar (optional)
   try {
@@ -55,12 +54,16 @@ export async function startAgent() {
   // 4. Start proactive scheduler
   startScheduler();
 
+  // 5. Start Telegram poller for inbound messages
+  startTelegramPoller();
+
   initialized = true;
-  console.log("\nAgent is running. Webhook ready for inbound messages.");
+  console.log("\nAgent is running. Listening for Telegram messages.");
 
   // Graceful shutdown
   const shutdown = () => {
     console.log("\nShutting down agent...");
+    stopTelegramPoller();
     stopScheduler();
     initialized = false;
     process.exit(0);

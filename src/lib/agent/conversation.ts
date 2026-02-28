@@ -32,12 +32,12 @@ const defaultState: ConversationState = {
 
 let state: ConversationState = { ...defaultState };
 let anthropic: Anthropic;
-let userEmail: string;
+let chatId: string;
 let socialGoal: number;
 
-export function initConversation(email: string, socialFrequency: number) {
+export function initConversation(telegramChatId: string, socialFrequency: number) {
   anthropic = new Anthropic();
-  userEmail = email;
+  chatId = telegramChatId;
   socialGoal = socialFrequency;
   loadState();
 }
@@ -107,10 +107,10 @@ Personality:
 - Never say "I'm an AI" or "as your assistant"
 
 Messages:
-- ALWAYS use the send_email tool to deliver your message. Never just write text without sending it.
-- One message at a time. Never send multiple emails in a row.
+- ALWAYS use the send_message tool to deliver your message. Never just write text without sending it.
+- One message at a time. Never send multiple messages in a row.
 - Keep messages short (this is texting).
-- Use **bold** for event names, bullets for lists.
+- Use bold for event names, bullets for lists.
 - Show costs as ~$XX (estimate from venue type, event category, and any price data available). Never use vague $/$$/$$$ symbols.
 - When listing multiple events, use tight format:
   "**Name** - Day, Venue (Area) ~$XX
@@ -124,8 +124,8 @@ Context:
 - Already suggested event IDs (don't repeat): ${state.suggestedEventIds.join(", ") || "none yet"}${calendarSection}
 
 Guidelines:
+- Before suggesting anything, study the full calendar carefully. Think about what the events tell you about where the user is, what they've been doing, and what makes sense to suggest right now.
 - Research before suggesting. Use query_events and search_web to understand what's available BEFORE composing a message.
-- Check the calendar and preferences before suggesting anything. Respect hard nos and availability. Think carefully about what calendar events mean for the user's availability and location.
 - Be conversational. Handle whatever the user asks: finding plans, managing their calendar, answering questions about their schedule.
 - When the user tells you about an event or commitment (e.g. "I have brunch Sunday"), ask if they want it on the calendar.
 - When the user locks in a plan, create a calendar hold.
@@ -173,8 +173,8 @@ async function runToolLoop(): Promise<void> {
     let response;
     try {
       const systemPrompt = await buildSystemPrompt();
-      response = await anthropic.messages.create({
-        model: "claude-sonnet-4-5-20250929",
+      const stream = anthropic.messages.stream({
+        model: "claude-opus-4-20250514",
         max_tokens: 16000,
         thinking: {
           type: "enabled",
@@ -184,6 +184,7 @@ async function runToolLoop(): Promise<void> {
         messages: state.messages,
         tools: agentTools,
       });
+      response = await stream.finalMessage();
     } catch (err: unknown) {
       const error = err as { status?: number };
       if (error.status === 429 && retries < MAX_RETRIES) {
@@ -231,7 +232,7 @@ async function runToolLoop(): Promise<void> {
           result = await executeTool(
             block.name,
             block.input as Record<string, unknown>,
-            { userEmail },
+            { chatId },
           );
         } catch (err) {
           console.error(`Tool ${block.name} failed:`, err);
@@ -266,8 +267,8 @@ async function runToolLoop(): Promise<void> {
       continue; // loop back for Claude to process tool results
     }
 
-    // No tool use — the agent should have already sent the email via
-    // the send_email tool. Just log the final text for debugging.
+    // No tool use — the agent should have already sent the message via
+    // the send_message tool. Just log the final text for debugging.
     if (textBlocks.length > 0) {
       const responseText = textBlocks
         .map((b) => (b.type === "text" ? b.text : ""))

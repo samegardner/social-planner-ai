@@ -113,22 +113,18 @@ export const agentTools: Tool[] = [
     },
   },
   {
-    name: "send_email",
+    name: "send_message",
     description:
-      "Send an email to the user. Use this for ALL outgoing emails: suggestions, follow-ups, drill-downs, etc. The recipient is always the user (set automatically).",
+      "Send a message to the user via Telegram. Use this for ALL outgoing messages: suggestions, follow-ups, drill-downs, etc. The recipient is always the user (set automatically).",
     input_schema: {
       type: "object" as const,
       properties: {
-        subject: {
-          type: "string",
-          description: "Email subject line. Keep it short (under 50 chars), catchy, and relevant.",
-        },
         message: {
           type: "string",
           description: "The message body to send",
         },
       },
-      required: ["subject", "message"],
+      required: ["message"],
     },
   },
   {

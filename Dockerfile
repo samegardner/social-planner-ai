@@ -9,27 +9,11 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 
-# Copy source and build
+# Copy source
 COPY . .
-RUN npm run build
 
-# Production image
-FROM node:20-alpine AS runner
-RUN apk add --no-cache python3 make g++
-WORKDIR /app
+# Create data directory
+RUN mkdir -p /app/data
 
-ENV NODE_ENV=production
-ENV PORT=3000
-ENV HOSTNAME=0.0.0.0
-
-# Copy standalone output
-COPY --from=base /app/.next/standalone ./
-COPY --from=base /app/.next/static ./.next/static
-COPY --from=base /app/public ./public
-
-# Symlink /app/data -> /data (persistent volume mount point)
-RUN ln -s /data /app/data && mkdir -p /data
-
-EXPOSE 3000
-
-CMD ["node", "server.js"]
+# The agent script runs as a long-lived process
+CMD ["npx", "tsx", "scripts/agent.ts"]

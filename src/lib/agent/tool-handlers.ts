@@ -3,7 +3,7 @@ import { getCalendar } from "./tools/get-calendar";
 import { createCalendarHold } from "./tools/create-calendar-hold";
 import { getPreferences } from "./tools/get-preferences";
 import { getFriends } from "./tools/get-friends";
-import { sendEmailTool } from "./tools/send-email";
+import { sendTelegramMessage } from "./tools/send-imessage";
 import { logInteraction } from "./tools/log-interaction";
 import { searchWeb } from "./tools/search-web";
 
@@ -11,7 +11,7 @@ import { searchWeb } from "./tools/search-web";
 type ToolInput = any;
 
 export interface ToolContext {
-  userEmail: string;
+  chatId: string;
 }
 
 export async function executeTool(
@@ -30,8 +30,8 @@ export async function executeTool(
       return getPreferences();
     case "get_friends":
       return getFriends();
-    case "send_email":
-      return sendEmailTool(input, ctx.userEmail);
+    case "send_message":
+      return sendTelegramMessage(input, ctx.chatId);
     case "search_web":
       return searchWeb(input);
     case "log_interaction":

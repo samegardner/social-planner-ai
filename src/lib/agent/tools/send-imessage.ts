@@ -1,11 +1,10 @@
 import { sendMessage } from "../imessage";
 
-interface SendIMessageInput {
-  phone_number: string;
+interface SendMessageInput {
   message: string;
 }
 
-export async function sendIMessage(input: SendIMessageInput) {
-  await sendMessage(input.phone_number, input.message);
-  return { sent: true, phone_number: input.phone_number };
+export async function sendTelegramMessage(input: SendMessageInput, chatId: string) {
+  await sendMessage(chatId, input.message);
+  return { sent: true, chat_id: chatId };
 }
