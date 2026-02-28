@@ -14,7 +14,6 @@ interface ConversationState {
   messages: MessageParam[];
   lastSuggestionEventId: number | null;
   suggestedEventIds: number[];
-  weekSocialCount: number;
   activeThread: boolean;
   lastProactiveDate: string | null;
   lastActivityTimestamp: string | null;
@@ -24,7 +23,6 @@ const defaultState: ConversationState = {
   messages: [],
   lastSuggestionEventId: null,
   suggestedEventIds: [],
-  weekSocialCount: 0,
   activeThread: false,
   lastProactiveDate: null,
   lastActivityTimestamp: null,
@@ -33,12 +31,10 @@ const defaultState: ConversationState = {
 let state: ConversationState = { ...defaultState };
 let anthropic: Anthropic;
 let chatId: string;
-let socialGoal: number;
 
-export function initConversation(telegramChatId: string, socialFrequency: number) {
+export function initConversation(telegramChatId: string) {
   anthropic = new Anthropic();
   chatId = telegramChatId;
-  socialGoal = socialFrequency;
   loadState();
 }
 
@@ -120,7 +116,6 @@ Messages:
 
 Context:
 - Today is ${dayName}, ${dateStr}
-- This week's social count: ${state.weekSocialCount} out of ${socialGoal} goal
 - Already suggested event IDs (don't repeat): ${state.suggestedEventIds.join(", ") || "none yet"}${calendarSection}
 
 Guidelines:
@@ -150,17 +145,12 @@ export async function startProactiveSuggestion(): Promise<void> {
     return;
   }
 
-  if (state.weekSocialCount >= socialGoal) {
-    console.log(`Social goal met (${state.weekSocialCount}/${socialGoal}), skipping proactive.`);
-    return;
-  }
-
   state.activeThread = true;
   state.lastProactiveDate = today;
   state.messages.push({
     role: "user",
     content:
-      "[SYSTEM] It's morning and the user is under their social goal. Check their calendar and preferences, research what's available, and text them a specific suggestion for something they'd enjoy this week.",
+      "[SYSTEM] Check the user's calendar and what's coming up this week. If there's something interesting happening that fits their taste, or their weekend looks open, send them a casual suggestion. Don't force it. If nothing stands out, don't message.",
   });
 
   await runToolLoop();
@@ -326,13 +316,3 @@ export function resetConversation() {
   console.log("Conversation state reset.");
 }
 
-// Reset weekly count (called by scheduler on Monday mornings)
-export function resetWeeklyCount() {
-  state.weekSocialCount = 0;
-  saveState();
-}
-
-export function incrementSocialCount() {
-  state.weekSocialCount++;
-  saveState();
-}

@@ -1,7 +1,7 @@
 import "dotenv/config";
 
-// Suppress actual email delivery in test mode
-process.env.SEND_EMAILS ??= "false";
+// Send real emails by default; set SEND_EMAILS=false to suppress
+process.env.SEND_EMAILS ??= "true";
 
 import { db } from "../src/lib/db";
 import { preferences } from "../src/lib/schema";

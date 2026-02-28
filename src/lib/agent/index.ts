@@ -34,10 +34,9 @@ export async function startAgent() {
   const chatId = process.env.TELEGRAM_CHAT_ID;
 
   console.log(`Telegram chat ID: ${chatId}`);
-  console.log(`Social goal: ${prefs.socialFrequency} events/week`);
 
   // 2. Initialize conversation manager
-  initConversation(chatId, prefs.socialFrequency ?? 2);
+  initConversation(chatId);
 
   // 3. Initialize Google Calendar (optional)
   try {

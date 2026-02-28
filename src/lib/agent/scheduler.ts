@@ -1,26 +1,20 @@
 import cron, { type ScheduledTask } from "node-cron";
-import { startProactiveSuggestion, resetWeeklyCount } from "./conversation";
+import { startProactiveSuggestion } from "./conversation";
 import { runScraper } from "@/lib/scraper";
 
 let suggestionJob: ScheduledTask | null = null;
-let resetJob: ScheduledTask | null = null;
 let scraperJob: ScheduledTask | null = null;
 
 export function startScheduler() {
-  // Daily at 9am: proactive suggestion
-  suggestionJob = cron.schedule("0 9 * * *", async () => {
-    console.log("Proactive scheduler triggered (9am)");
+  // Wednesday and Saturday at 9am: proactive suggestions
+  suggestionJob = cron.schedule("0 9 * * 3,6", async () => {
+    const day = new Date().toLocaleDateString("en-US", { weekday: "long" });
+    console.log(`Proactive scheduler triggered (${day} 9am)`);
     try {
       await startProactiveSuggestion();
     } catch (err) {
       console.error("Proactive suggestion failed:", err);
     }
-  });
-
-  // Monday at midnight: reset weekly social count
-  resetJob = cron.schedule("0 0 * * 1", () => {
-    console.log("Resetting weekly social count (Monday midnight)");
-    resetWeeklyCount();
   });
 
   // Daily at 3am: scrape for new events
@@ -36,17 +30,13 @@ export function startScheduler() {
     }
   });
 
-  console.log("Scheduler started (suggestions 9am, scraper 3am, weekly reset Mondays)");
+  console.log("Scheduler started (suggestions Wed/Sat 9am, scraper 3am)");
 }
 
 export function stopScheduler() {
   if (suggestionJob) {
     suggestionJob.stop();
     suggestionJob = null;
-  }
-  if (resetJob) {
-    resetJob.stop();
-    resetJob = null;
   }
   if (scraperJob) {
     scraperJob.stop();
