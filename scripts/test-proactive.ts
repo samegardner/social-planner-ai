@@ -31,7 +31,7 @@ async function main() {
 
   console.log(`Sending proactive suggestion to ${prefs!.email}...`);
 
-  initConversation(prefs!.email!, prefs!.socialFrequency ?? 2);
+  initConversation(prefs!.email!);
 
   try {
     initCalendar();
