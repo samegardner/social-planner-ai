@@ -29,9 +29,14 @@ async function main() {
     console.log("Updated preferences with email.");
   }
 
-  console.log(`Sending proactive suggestion to ${prefs!.email}...`);
+  const chatId = process.env.TELEGRAM_CHAT_ID;
+  if (!chatId) {
+    throw new Error("Missing TELEGRAM_CHAT_ID in .env");
+  }
 
-  initConversation(prefs!.email!);
+  console.log(`Sending proactive suggestion via Telegram (chat ${chatId})...`);
+
+  initConversation(chatId);
 
   try {
     initCalendar();
